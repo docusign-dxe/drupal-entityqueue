@@ -34,13 +34,56 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
   /**
    * {@inheritdoc}
    */
+  public static function defaultSettings() {
+    return [
+      'link_to_entity' => FALSE,
+    ] + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = parent::settingsForm($form, $form_state);
+
+    $elements['link_to_entity'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Link label to the referenced entity'),
+      '#default_value' => $this->getSetting('link'),
+    ];
+
+    return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+
+    $settings = $this->getSettings();
+    if (!empty($settings['link_to_entity'])) {
+      $summary[] = $this->t('Link to the referenced entity');
+    }
+
+    return $summary;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
     $referenced_entities = $items->referencedEntities();
 
     if (isset($referenced_entities[$delta])) {
-      $entity_label = EntityAutocomplete::getEntityLabels([$referenced_entities[$delta]]);
+      if ($this->getSetting('link_to_entity') && !$referenced_entities[$delta]->isNew()) {
+        $entity_label = $referenced_entities[$delta]->toLink()->toString();
+      }
+      else {
+        $entity_label = $referenced_entities[$delta]->label();
+      }
       $id_prefix = implode('-', array_merge($parents, [$field_name, $delta]));
 
       $element += [

@@ -2,10 +2,12 @@
 
 namespace Drupal\entityqueue;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\entityqueue\Entity\EntitySubqueue;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -58,7 +60,12 @@ class EntityQueueListBuilder extends ConfigEntityListBuilder {
       'enabled' => [],
       'disabled' => [],
     ];
+    /** @var \Drupal\entityqueue\EntityQueueInterface $entity */
     foreach (parent::load() as $entity) {
+      // Don't display queues which can not be edited by the user.
+      if (!$entity->access('update')) {
+        continue;
+      }
       if ($entity->status()) {
         $entities['enabled'][] = $entity;
       }
@@ -107,6 +114,10 @@ class EntityQueueListBuilder extends ConfigEntityListBuilder {
     $build['#type'] = 'container';
     $build['#attributes']['id'] = 'entity-queue-list';
     $build['#attached']['library'][] = 'core/drupal.ajax';
+    $build['#cache'] = [
+      'contexts' => Cache::mergeContexts($this->entityType->getListCacheContexts(), ['user.permissions']),
+      'tags' => $this->entityType->getListCacheTags(),
+    ];
 
     $build['enabled']['heading']['#markup'] = '<h2>' . $this->t('Enabled', [], ['context' => 'Plural']) . '</h2>';
     $build['disabled']['heading']['#markup'] = '<h2>' . $this->t('Disabled', [], ['context' => 'Plural']) . '</h2>';

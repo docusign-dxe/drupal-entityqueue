@@ -22,7 +22,8 @@ use Drupal\entityqueue\EntityQueueInterface;
  *       "add" = "Drupal\entityqueue\Form\EntityQueueForm",
  *       "edit" = "Drupal\entityqueue\Form\EntityQueueForm",
  *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
- *     }
+ *     },
+ *     "access" = "Drupal\entityqueue\EntityQueueAccessControlHandler",
  *   },
  *   admin_permission = "administer entityqueue",
  *   config_prefix = "entity_queue",

@@ -39,11 +39,6 @@ function entityqueue_views_pre_render(ViewExecutable $view) {
     return;
   }
 
-  // Proceed only if there is entityqueue sort criteria available.
-  if (!$sort_key = entityqueue_get_entityqueue_sort($view)) {
-    return;
-  }
-
   // Allow to disable the contextual links.
   if (!$view->display_handler->getOption('show_admin_links')) {
     return;
@@ -83,28 +78,7 @@ function entityqueue_contextual_links_view_alter(&$element, $items) {
       'data-dialog-renderer' => 'off_canvas',
       'data-settings-tray-edit' => TRUE,
     ];
-
-    $element['#attached']['library'][] = 'settings_tray/drupal.off_canvas';
   }
-}
-
-/**
- * Get the entityqueue position sort of a view if there is one and return its
- * ID. If there are multiple of these sorts the first is returned.
- *
- * @param $view
- *   The view object.
- *
- * @return
- *   The ID of the sort or FALSE if there isn't one.
- */
-function entityqueue_get_entityqueue_sort($view) {
-  foreach ($view->sort as $id => $sort) {
-    if ($sort->definition['id'] == 'entity_queue_position') {
-      return $id;
-    }
-  }
-  return FALSE;
 }
 
 /**

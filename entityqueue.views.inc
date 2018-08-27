@@ -57,6 +57,23 @@ function entityqueue_views_data_alter(array &$data) {
       'field field' => $columns['target_id'],
     ];
 
+    $data[$target_base_table]['entityqueue_relationship_in_queue']['sort'] = [
+      'id' => 'entity_queue_in_queue',
+      'group' => t('Entityqueue'),
+      'title' => t('In @target_label queue', [
+        '@target_label' => $entity_type->getLabel(),
+      ]),
+      'label' => t('In @target_label queue', [
+        '@target_label' => $entity_type->getLabel(),
+      ]),
+      'help' => t('Filter to ensure a(n) @target_label IS or IS NOT in the related queue', [
+        '@target_label' => $entity_type->getLabel(),
+      ]),
+      'field' => 'delta',
+      'field table' => $subqueue_items_table_name,
+      'field_name' => $field_name,
+    ];
+
     $data[$target_base_table]['entityqueue_relationship']['sort'] = [
       'id' => 'entity_queue_position',
       'group' => t('Entityqueue'),

@@ -12,7 +12,6 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormBase;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -49,8 +48,7 @@ class EntitySubqueueForm extends ContentEntityForm {
       $container->get('entity.manager'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
-      $container->get('element_info'),
-      $container->get('logger.factory')->get('entityqueue')
+      $container->get('element_info')
     );
   }
 
@@ -65,14 +63,12 @@ class EntitySubqueueForm extends ContentEntityForm {
    *   The time service.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
    *   The element info manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, ElementInfoManagerInterface $element_info, LoggerInterface $logger) {
+  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, ElementInfoManagerInterface $element_info) {
     parent::__construct($entity_manager, $entity_type_bundle_info, $time);
 
     $this->elementInfo = $element_info;
-    $this->logger = $logger;
+    $this->logger = $this->logger("entityqueue");
   }
 
   /**
@@ -297,11 +293,11 @@ class EntitySubqueueForm extends ContentEntityForm {
 
     $edit_link = $subqueue->toLink($this->t('Edit'), 'edit-form')->toString();
     if ($status == SAVED_UPDATED) {
-      drupal_set_message($this->t('The entity subqueue %label has been updated.', ['%label' => $subqueue->label()]));
+      $this->messenger()->addMessage($this->t('The entity subqueue %label has been updated.', ['%label' => $subqueue->label()]));
       $this->logger->notice('The entity subqueue %label has been updated.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
     else {
-      drupal_set_message($this->t('The entity subqueue %label has been added.', ['%label' => $subqueue->label()]));
+      $this->messenger()->addMessage($this->t('The entity subqueue %label has been added.', ['%label' => $subqueue->label()]));
       $this->logger->notice('The entity subqueue %label has been added.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
 

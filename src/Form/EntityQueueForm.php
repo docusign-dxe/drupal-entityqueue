@@ -11,7 +11,6 @@ use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\entityqueue\EntityQueueInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -61,8 +60,7 @@ class EntityQueueForm extends BundleEntityFormBase {
     return new static(
       $container->get('entity_type.repository'),
       $container->get('plugin.manager.entityqueue.handler'),
-      $container->get('plugin.manager.entity_reference_selection'),
-      $container->get('logger.factory')->get('entityqueue')
+      $container->get('plugin.manager.entity_reference_selection')
     );
   }
 
@@ -73,14 +71,12 @@ class EntityQueueForm extends BundleEntityFormBase {
    *   The entity type repository.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $entity_queue_handler_manager
    *   The entity queue handler plugin manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
    */
-  public function __construct(EntityTypeRepositoryInterface $entity_type_repository, PluginManagerInterface $entity_queue_handler_manager, SelectionPluginManagerInterface $selection_manager, LoggerInterface $logger) {
+  public function __construct(EntityTypeRepositoryInterface $entity_type_repository, PluginManagerInterface $entity_queue_handler_manager, SelectionPluginManagerInterface $selection_manager) {
     $this->entityTypeRepository = $entity_type_repository;
     $this->entityQueueHandlerManager = $entity_queue_handler_manager;
     $this->selectionManager = $selection_manager;
-    $this->logger = $logger;
+    $this->logger = $this->logger("entityqueue");
   }
 
   /**
@@ -387,11 +383,11 @@ class EntityQueueForm extends BundleEntityFormBase {
 
     $edit_link = $queue->toLink($this->t('Edit'), 'edit-form')->toString();
     if ($status == SAVED_UPDATED) {
-      drupal_set_message($this->t('The entity queue %label has been updated.', ['%label' => $queue->label()]));
+      $this->messenger()->addMessage($this->t('The entity queue %label has been updated.', ['%label' => $queue->label()]));
       $this->logger->notice('The entity queue %label has been updated.', ['%label' => $queue->label(), 'link' => $edit_link]);
     }
     else {
-      drupal_set_message($this->t('The entity queue %label has been added.', ['%label' => $queue->label()]));
+      $this->messenger()->addMessage($this->t('The entity queue %label has been added.', ['%label' => $queue->label()]));
       $this->logger->notice('The entity queue %label has been added.', ['%label' => $queue->label(), 'link' => $edit_link]);
     }
 

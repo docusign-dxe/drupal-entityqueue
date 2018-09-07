@@ -6,7 +6,6 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\entityqueue\Plugin\views\relationship\EntityQueueRelationship;
 use Drupal\views\Plugin\views\sort\SortPluginBase;
-use Drupal\Core\Messenger\Messenger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -92,10 +91,10 @@ class EntityQueueInQueue extends SortPluginBase {
     }
     else {
       if ($this->currentUser->hasPermission('administer views')) {
-        $this->messenger->addMessage($this->t('In order to sort by in queue, you need to add the Entityqueue: Queue relationship on View: @view with display: @display',
-          ['@view' => $this->view->storage->label(),
-            '@display' => $this->view->current_display]
-        ),  Messenger::TYPE_ERROR);
+        $this->messenger->addMessage($this->t('In order to sort by in queue, you need to add the Entityqueue: Queue relationship on View: @view with display: @display', [
+          '@view' => $this->view->storage->label(),
+          '@display' => $this->view->current_display
+        ]), MessengerInterface::TYPE_ERROR);
       }
     }
   }

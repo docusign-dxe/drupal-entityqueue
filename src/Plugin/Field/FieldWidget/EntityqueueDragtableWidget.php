@@ -37,6 +37,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
   public static function defaultSettings() {
     return [
       'link_to_entity' => FALSE,
+      'link_to_edit_form' => TRUE,
     ] + parent::defaultSettings();
   }
 
@@ -49,7 +50,12 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
     $elements['link_to_entity'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Link label to the referenced entity'),
-      '#default_value' => $this->getSetting('link'),
+      '#default_value' => $this->getSetting('link_to_entity'),
+    ];
+    $elements['link_to_edit_form'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Add a link to the edit form of the referenced entity'),
+      '#default_value' => $this->getSetting('link_to_edit_form'),
     ];
 
     return $elements;
@@ -65,6 +71,9 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
     if (!empty($settings['link_to_entity'])) {
       $summary[] = $this->t('Link to the referenced entity');
     }
+    if (!empty($settings['link_to_edit_form'])) {
+      $summary[] = $this->t('Link to the edit form of the referenced entity');
+    }
 
     return $summary;
   }
@@ -73,9 +82,10 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    /** @var \Drupal\Core\Entity\EntityInterface[] $referenced_entities */
+    $referenced_entities = $items->referencedEntities();
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
-    $referenced_entities = $items->referencedEntities();
 
     if (isset($referenced_entities[$delta])) {
       if ($this->getSetting('link_to_entity') && !$referenced_entities[$delta]->isNew()) {
@@ -97,6 +107,10 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
         'entity' => [
           '#type' => 'value',
           '#default_value' => $referenced_entities[$delta],
+        ],
+        'edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => \Drupal::destination()->getAsArray()])->toRenderable() + [
+          '#attributes' => ['class' => ['form-item']],
+          '#access' => (bool) $this->getSetting('link_to_edit_form'),
         ],
         'remove' => [
           '#type' => 'submit',

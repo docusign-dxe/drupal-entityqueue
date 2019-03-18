@@ -225,8 +225,7 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the subqueue was created.'))
-      ->setDefaultValueCallback('Drupal\entityqueue\Entity\EntitySubqueue::getDefaultCreatedTime');
+      ->setDescription(t('The time that the subqueue was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
@@ -311,18 +310,6 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
    */
   public static function getCurrentUserId() {
     return [\Drupal::currentUser()->id()];
-  }
-
-  /**
-   * Default value callback for 'created' base field definition.
-   *
-   * @see ::baseFieldDefinitions()
-   *
-   * @return array
-   *   An array of default values.
-   */
-  public static function getDefaultCreatedTime() {
-    return REQUEST_TIME;
   }
 
   /**

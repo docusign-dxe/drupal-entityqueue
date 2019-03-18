@@ -1006,9 +1006,9 @@ function entityqueue_field_widget_form(&$form, &$form_state, $field, $instance, 
         continue;
       }
 
+      $uri = entity_uri($target_type, $entities[$target_id]);
       if (entity_access('view', $target_type, $entities[$target_id])) {
         $label = entity_label($target_type, $entities[$target_id]);
-        $uri = entity_uri($target_type, $entities[$target_id]);
         $label = l($label, $uri['path']);
       }
       else {
@@ -1026,10 +1026,34 @@ function entityqueue_field_widget_form(&$form, &$form_state, $field, $instance, 
         ),
       );
 
+      $entity_actions = array();
+
+      if (entity_access('edit', $target_type, $entities[$target_id])) {
+        $entity_actions[] = array('title' => t('edit'), 'href' => drupal_get_normal_path($uri['path']) . '/edit', 'query' => drupal_get_destination());
+      }
+      if (entity_access('delete', $target_type, $entities[$target_id])) {
+        $entity_actions[] = array('title' => t('delete'), 'href' => drupal_get_normal_path($uri['path']) . '/delete', 'query' => drupal_get_destination());
+      }
+
       $subform['items'][$weight] = array(
         'label' => array(
           '#type' => 'markup',
           '#markup' => $label,
+        ),
+        'entity_actions' => array(
+          '#type' => 'actions',
+          'separator' => array(
+            '#type' => 'markup',
+            '#markup' => '&mdash;'
+          ),
+          'actions' => array(
+            '#type' => 'markup',
+            '#markup' => theme('links__ctools_dropbutton', array(
+              'title' => t('Actions'),
+              'links' => $entity_actions,
+            )),
+          ),
+          '#access' => count($entity_actions) ? 1 : 0,
         ),
         $value_key => array(
           '#type' => 'value',

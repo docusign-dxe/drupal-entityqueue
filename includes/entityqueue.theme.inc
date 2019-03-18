@@ -52,6 +52,7 @@ function theme_entityqueue_status($variables) {
  */
 function theme_entityqueue_dragtable($variables) {
   $form = $variables['form'];
+  drupal_add_css(drupal_get_path('module', 'entityqueue') . '/css/entityqueue.subquery_form.css', array('type' => 'file'));
 
   $output = '';
   $rows = array();
@@ -61,7 +62,7 @@ function theme_entityqueue_dragtable($variables) {
     if (isset($form[$key]['label'])) {
       $row = array();
 
-      $row[] = drupal_render($form[$key]['label']);
+      $row[] = '<div class="container-inline">' . drupal_render($form[$key]['label']) . ' ' . drupal_render($form[$key]['entity_actions']) . '</div>';
       $row[] = drupal_render($form[$key]['actions']);
       $row[] = drupal_render($form[$key]['weight']);
 

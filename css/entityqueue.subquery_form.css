@@ -1,0 +1,16 @@
+/**
+ * @file
+ * Basic styling for the Entityqueue module.
+ */
+
+#entityqueue-subqueue-edit-form td .container-inline > div {
+  padding-left: 12px;
+}
+
+#entityqueue-subqueue-edit-form td .ctools-button {
+  display: inline-block;
+}
+
+#entityqueue-subqueue-edit-form td .ctools-dropbutton {
+  margin-left: 12px;
+}

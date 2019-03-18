@@ -243,6 +243,12 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
     if ($queue = EntityQueue::load($bundle)) {
       $fields['items'] = clone $base_field_definitions['items'];
       $fields['items']->setSettings($queue->getEntitySettings());
+
+      // Restrict the cardinality of the 'items' field if the queue has defined
+      // a maximum number of items.
+      if ($max_size = $queue->getMaximumSize()) {
+        $fields['items']->setCardinality($max_size);
+      }
       return $fields;
     }
     return [];

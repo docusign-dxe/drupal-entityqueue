@@ -79,9 +79,56 @@ class EntitySubqueueListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function getDefaultOperations(EntityInterface $entity) {
-    $operations = parent::getDefaultOperations($entity);
+    /** @var \Drupal\entityqueue\EntityQueueInterface $queue */
+    $queue = $entity->getQueue();
 
-    $operations['edit']['title'] = $this->t('Edit items');
+    $operations = [];
+    if ($queue->access('update') && $queue->hasLinkTemplate('edit-form')) {
+      $operations['configure'] = [
+        'title' => $this->t('Configure'),
+        'weight' => 10,
+        'url' => $this->ensureDestination($queue->toUrl('edit-form')),
+      ];
+    }
+    if ($queue->access('delete') && $queue->hasLinkTemplate('delete-form')) {
+      $operations['delete'] = [
+        'title' => $this->t('Delete'),
+        'weight' => 100,
+        'url' => $this->ensureDestination($queue->toUrl('delete-form')),
+      ];
+    }
+
+    if (!$queue->status() && $queue->hasLinkTemplate('enable')) {
+      $operations['enable'] = [
+        'title' => t('Enable'),
+        'weight' => -10,
+        'url' => $this->ensureDestination($queue->toUrl('enable')),
+      ];
+    }
+    elseif ($queue->hasLinkTemplate('disable')) {
+      $operations['disable'] = [
+        'title' => t('Disable'),
+        'weight' => 40,
+        'url' => $queue->toUrl('disable'),
+      ];
+    }
+    // Add AJAX functionality to enable/disable operations.
+    foreach (['enable', 'disable'] as $op) {
+      if (isset($operations[$op])) {
+        $operations[$op]['url'] = $queue->toUrl($op);
+        // Enable and disable operations should use AJAX.
+        $operations[$op]['attributes']['class'][] = 'use-ajax';
+      }
+    }
+
+    // Allow queue handlers to add their own operations.
+    $operations += $queue->getHandlerPlugin()->getQueueListBuilderOperations();
+
+    // We provide queue operations on the subqueue list builder, so we need to
+    // fire the alter hooks for the queue as well.
+    $operations += $this->moduleHandler()->invokeAll('entity_operation', [$queue]);
+    $this->moduleHandler->alter('entity_operation', $operations, $queue);
+    uasort($operations, '\Drupal\Component\Utility\SortArray::sortByWeightElement');
 
     return $operations;
   }

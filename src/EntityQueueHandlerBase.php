@@ -20,7 +20,7 @@ abstract class EntityQueueHandlerBase extends PluginBase implements EntityQueueH
   /**
    * The entity queue that is using this plugin.
    *
-   * @var \Drupal\entityqueue\Entity\EntityQueue
+   * @var \Drupal\entityqueue\EntityQueueInterface
    */
   protected $queue;
 
@@ -98,7 +98,7 @@ abstract class EntityQueueHandlerBase extends PluginBase implements EntityQueueH
     $operations['view_subqueues'] = [
       'title' => $this->t('View subqueues'),
       'weight' => -9,
-      'url' => $this->queue->urlInfo('subqueue-list'),
+      'url' => $this->queue->toUrl('subqueue-list'),
     ];
 
     return $operations;

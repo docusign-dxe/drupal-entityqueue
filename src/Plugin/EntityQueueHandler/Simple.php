@@ -40,7 +40,7 @@ class Simple extends EntityQueueHandlerBase {
     $operations['edit_subqueue'] = [
       'title' => $this->t('Edit items'),
       'weight' => -9,
-      'url' => EntitySubqueue::load($this->queue->id())->urlInfo('edit-form'),
+      'url' => EntitySubqueue::load($this->queue->id())->toUrl('edit-form'),
     ];
 
     return $operations;

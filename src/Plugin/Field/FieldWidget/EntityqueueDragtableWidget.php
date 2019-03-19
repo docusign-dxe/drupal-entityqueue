@@ -5,6 +5,7 @@ namespace Drupal\entityqueue\Plugin\Field\FieldWidget;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
@@ -82,7 +83,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    /** @var \Drupal\Core\Entity\EntityInterface[] $referenced_entities */
+    assert($items instanceof EntityReferenceFieldItemListInterface);
     $referenced_entities = $items->referencedEntities();
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
@@ -194,7 +195,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
 
     // Ensure the widget allows adding additional items.
     if ($element['#cardinality'] != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      return;
+      return NULL;
     }
 
     // Add a DIV around the delta receiving the Ajax effect.

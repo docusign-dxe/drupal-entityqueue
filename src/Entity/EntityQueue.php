@@ -332,6 +332,9 @@ class EntityQueue extends ConfigEntityBundleBase implements EntityQueueInterface
 
   /**
    * {@inheritdoc}
+   *
+   * @return static[]
+   *   An array of entity queue objects, indexed by their IDs.
    */
   public static function loadMultipleByTargetType($target_entity_type_id) {
     $ids = \Drupal::entityTypeManager()->getStorage('entity_queue')->getQuery()

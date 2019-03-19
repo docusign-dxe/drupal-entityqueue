@@ -71,6 +71,8 @@ class EntityQueueForm extends BundleEntityFormBase {
    *   The entity type repository.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $entity_queue_handler_manager
    *   The entity queue handler plugin manager.
+   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selection_manager
+   *   The selection plugin manager.
    */
   public function __construct(EntityTypeRepositoryInterface $entity_type_repository, PluginManagerInterface $entity_queue_handler_manager, SelectionPluginManagerInterface $selection_manager) {
     $this->entityTypeRepository = $entity_type_repository;
@@ -108,7 +110,7 @@ class EntityQueueForm extends BundleEntityFormBase {
       '#disabled' => !$queue->isNew(),
     ];
 
-    $handler_plugin = $this->getHandlerPlugin($this->getEntity(), $form_state);
+    $handler_plugin = $this->getHandlerPlugin($queue, $form_state);
     $form['handler'] = [
       '#type' => 'radios',
       '#title' => $this->t('Type'),
@@ -226,13 +228,13 @@ class EntityQueueForm extends BundleEntityFormBase {
       '#type' => 'container',
       '#process' => [
         [EntityReferenceItem::class, 'fieldSettingsAjaxProcess'],
-        [EntityReferenceItem::class, 'formProcessMergeParent']
+        [EntityReferenceItem::class, 'formProcessMergeParent'],
       ],
       '#element_validate' => [[get_class($this), 'entityReferenceSelectionSettingsValidate']],
     ];
 
     // @todo It should be up to the queue handler to determine what entity types
-    // are queue-able.
+    //   are queue-able.
     $form['entity_settings']['settings']['target_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Type of items to queue'),
@@ -333,6 +335,7 @@ class EntityQueueForm extends BundleEntityFormBase {
     /** @var \Drupal\entityqueue\EntityQueueInterface $queue */
     $queue = $form_state->getFormObject()->getEntity();
 
+    /** @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface $selection_handler */
     $selection_handler = \Drupal::service('plugin.manager.entity_reference_selection')->getInstance($queue->getEntitySettings());
 
     // @todo Take care of passing the right $form and $form_state structures to
@@ -354,7 +357,7 @@ class EntityQueueForm extends BundleEntityFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    $handler_plugin = $this->getHandlerPlugin($this->getEntity(), $form_state);
+    $handler_plugin = $this->getHandlerPlugin($this->entity, $form_state);
     $subform_state = SubformState::createForSubform($form['handler_settings_wrapper']['handler_settings'], $form, $form_state);
     $handler_plugin->validateConfigurationForm($form['handler_settings_wrapper']['handler_settings'], $subform_state);
   }

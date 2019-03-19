@@ -21,6 +21,7 @@ function entityqueue_entity_field_access($operation, FieldDefinitionInterface $f
   // Only allow edit access on a subqueue title field if the queue doesn't have
   // automated subqueues.
   if ($operation == 'edit' && $field_definition->getName() == 'title' && $items && $items->getEntity()->getEntityTypeId() === 'entity_subqueue') {
+    /** @var \Drupal\entityqueue\EntityQueueInterface $queue */
     $queue = $items->getEntity()->getQueue();
     return AccessResult::forbiddenIf($queue->getHandlerPlugin()->hasAutomatedSubqueues());
   }

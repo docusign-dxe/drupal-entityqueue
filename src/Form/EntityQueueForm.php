@@ -47,13 +47,6 @@ class EntityQueueForm extends BundleEntityFormBase {
   protected $selectionManager;
 
   /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -78,7 +71,6 @@ class EntityQueueForm extends BundleEntityFormBase {
     $this->entityTypeRepository = $entity_type_repository;
     $this->entityQueueHandlerManager = $entity_queue_handler_manager;
     $this->selectionManager = $selection_manager;
-    $this->logger = $this->logger("entityqueue");
   }
 
   /**
@@ -387,11 +379,11 @@ class EntityQueueForm extends BundleEntityFormBase {
     $edit_link = $queue->toLink($this->t('Edit'), 'edit-form')->toString();
     if ($status == SAVED_UPDATED) {
       $this->messenger()->addMessage($this->t('The entity queue %label has been updated.', ['%label' => $queue->label()]));
-      $this->logger->notice('The entity queue %label has been updated.', ['%label' => $queue->label(), 'link' => $edit_link]);
+      $this->logger('entityqueue')->notice('The entity queue %label has been updated.', ['%label' => $queue->label(), 'link' => $edit_link]);
     }
     else {
       $this->messenger()->addMessage($this->t('The entity queue %label has been added.', ['%label' => $queue->label()]));
-      $this->logger->notice('The entity queue %label has been added.', ['%label' => $queue->label(), 'link' => $edit_link]);
+      $this->logger('entityqueue')->notice('The entity queue %label has been added.', ['%label' => $queue->label(), 'link' => $edit_link]);
     }
 
     $form_state->setRedirectUrl($queue->toUrl('collection'));

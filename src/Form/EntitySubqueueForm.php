@@ -295,11 +295,11 @@ class EntitySubqueueForm extends ContentEntityForm {
     $edit_link = $subqueue->toLink($this->t('Edit'), 'edit-form')->toString();
     if ($status == SAVED_UPDATED) {
       $this->messenger()->addMessage($this->t('The entity subqueue %label has been updated.', ['%label' => $subqueue->label()]));
-      $this->logger("entityqueue")->notice('The entity subqueue %label has been updated.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
+      $this->logger('entityqueue')->notice('The entity subqueue %label has been updated.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
     else {
       $this->messenger()->addMessage($this->t('The entity subqueue %label has been added.', ['%label' => $subqueue->label()]));
-      $this->logger("entityqueue")->notice('The entity subqueue %label has been added.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
+      $this->logger('entityqueue')->notice('The entity subqueue %label has been added.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
 
     $queue = $subqueue->getQueue();

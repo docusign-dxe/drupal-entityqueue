@@ -35,13 +35,6 @@ class EntitySubqueueForm extends ContentEntityForm {
   protected $elementInfo;
 
   /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -69,7 +62,6 @@ class EntitySubqueueForm extends ContentEntityForm {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 
     $this->elementInfo = $element_info;
-    $this->logger = $this->logger("entityqueue");
   }
 
   /**
@@ -303,11 +295,11 @@ class EntitySubqueueForm extends ContentEntityForm {
     $edit_link = $subqueue->toLink($this->t('Edit'), 'edit-form')->toString();
     if ($status == SAVED_UPDATED) {
       $this->messenger()->addMessage($this->t('The entity subqueue %label has been updated.', ['%label' => $subqueue->label()]));
-      $this->logger->notice('The entity subqueue %label has been updated.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
+      $this->logger("entityqueue")->notice('The entity subqueue %label has been updated.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
     else {
       $this->messenger()->addMessage($this->t('The entity subqueue %label has been added.', ['%label' => $subqueue->label()]));
-      $this->logger->notice('The entity subqueue %label has been added.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
+      $this->logger("entityqueue")->notice('The entity subqueue %label has been added.', ['%label' => $subqueue->label(), 'link' => $edit_link]);
     }
 
     $queue = $subqueue->getQueue();

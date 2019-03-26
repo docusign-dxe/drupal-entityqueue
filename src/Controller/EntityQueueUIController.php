@@ -2,6 +2,7 @@
 
 namespace Drupal\entityqueue\Controller;
 
+use Drupal\Core\Ajax\AlertCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatch;
@@ -179,7 +180,13 @@ class EntityQueueUIController extends ControllerBase {
     $entity = $this->entityTypeManager()->getStorage($entity_subqueue->getQueue()->getTargetEntityTypeId())->load($entity_id);
 
     // Perform the operation.
-    $entity_subqueue->$op($entity)->save();
+    $entity_subqueue->$op($entity);
+
+    // Run validation.
+    if (count($violations = $entity_subqueue->validate()) === 0) {
+      // Save subqueue.
+      $entity_subqueue->save();
+    }
 
     // If the request is via AJAX, return the rendered list as JSON.
     if ($request->request->get('js')) {
@@ -187,6 +194,9 @@ class EntityQueueUIController extends ControllerBase {
       $list = $this->subqueueListForEntity($route_match, $entity->getEntityTypeId(), $entity);
       $response = new AjaxResponse();
       $response->addCommand(new ReplaceCommand('#entity-subqueue-list', $list));
+      if (count($violations) > 0) {
+        $response->addCommand(new AlertCommand($this->t('Failed to add to queue, as pre-save validation failed')));
+      }
       return $response;
     }
 

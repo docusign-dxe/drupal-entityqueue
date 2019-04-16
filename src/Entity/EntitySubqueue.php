@@ -245,8 +245,8 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
       $fields['items']->setSettings($queue->getEntitySettings());
 
       // Restrict the cardinality of the 'items' field if the queue has defined
-      // a maximum number of items.
-      if ($max_size = $queue->getMaximumSize()) {
+      // a maximum number of items and it is not configured to act as a queue.
+      if (($max_size = $queue->getMaximumSize()) && !$queue->getActAsQueue()) {
         $fields['items']->setCardinality($max_size);
       }
       return $fields;

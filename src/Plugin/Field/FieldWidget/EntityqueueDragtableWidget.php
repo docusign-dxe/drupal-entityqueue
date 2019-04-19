@@ -4,19 +4,19 @@ namespace Drupal\entityqueue\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 
 /**
  * Plugin implementation of the 'entityqueue_dragtable' widget.
  *
  * @FieldWidget(
  *   id = "entityqueue_dragtable",
- *   label = @Translation("Autocomplete (draggable table) - Experimental"),
+ *   label = @Translation("Autocomplete (draggable table)"),
  *   description = @Translation("An autocomplete text field with a draggable table."),
  *   field_types = {
  *     "entity_reference"
@@ -84,43 +84,39 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     assert($items instanceof EntityReferenceFieldItemListInterface);
+    /** @var \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository */
+    $entity_repository = \Drupal::service('entity.repository');
+
     $referenced_entities = $items->referencedEntities();
     $field_name = $this->fieldDefinition->getName();
-    $parents = $form['#parents'];
 
     if (isset($referenced_entities[$delta])) {
-      if ($this->getSetting('link_to_entity') && !$referenced_entities[$delta]->isNew()) {
-        $entity_label = $referenced_entities[$delta]->toLink()->toString();
-      }
-      else {
-        $entity_label = $referenced_entities[$delta]->label();
-      }
-      $id_prefix = implode('-', array_merge($parents, [$field_name, $delta]));
+      $entity = $entity_repository->getTranslationFromContext($referenced_entities[$delta]);
+      $entity_label = ($this->getSetting('link_to_entity') && !$entity->isNew()) ? $entity->toLink()->toString() : $entity->label();
 
       $element += [
         '#type' => 'container',
         '#attributes' => ['class' => ['form--inline']],
         'target_id' => [
           '#type' => 'item',
-          '#markup' => $entity_label,
+          '#markup' => ($entity->access('view label')) ? $entity_label : t('- Restricted access -'),
           '#default_value' => !$referenced_entities[$delta]->isNew() ? $referenced_entities[$delta]->id() : NULL,
+          '#weight' => 0,
         ],
-        'entity' => [
-          '#type' => 'value',
-          '#default_value' => $referenced_entities[$delta],
-        ],
-        'edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => \Drupal::destination()->getAsArray()])->toRenderable() + [
+        '_edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => \Drupal::destination()->getAsArray()])->toRenderable() + [
           '#attributes' => ['class' => ['form-item']],
           '#access' => (bool) $this->getSetting('link_to_edit_form'),
         ],
-        'remove' => [
+        '_remove' => [
           '#type' => 'submit',
-          '#name' => strtr($id_prefix, '-', '_') . '_remove',
+          '#name' => implode('_', array_merge($form['#parents'], [$field_name, $delta])) . '_remove',
+          '#delta' => $delta,
           '#value' => $this->t('Remove'),
           '#attributes' => ['class' => ['remove-item-submit', 'align-right']],
+          '#limit_validation_errors' => [array_merge($form['#parents'], [$field_name])],
           '#submit' => [[get_class($this), 'removeSubmit']],
           '#ajax' => [
-            'callback' => [get_class($this), 'getWidgetElementAjax'],
+            'callback' => [get_class($this), 'removeAjax'],
             'wrapper' => $this->getWrapperId(),
             'effect' => 'fade',
           ],
@@ -128,6 +124,49 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
       ];
     }
 
+    return $element;
+  }
+
+  /**
+   * Submission handler for the "Remove" button.
+   */
+  public static function removeSubmit(array &$form, FormStateInterface $form_state) {
+    $button = $form_state->getTriggeringElement();
+
+    // Go two levels up in the form, to the widgets container.
+    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -2));
+    $field_name = $element['#field_name'];
+    $parents = $element['#field_parents'];
+
+    // Set a NULL target ID for the removed element.
+    $form_state->setValueForElement($element[$button['#delta']]['target_id'], NULL);
+
+    // Update the field item list values.
+    $items = $form_state->getFormObject()->getEntity()->get($field_name);
+    $widget = $form_state->getFormObject()->getFormDisplay($form_state)->getRenderer($field_name);
+    $widget->extractFormValues($items, $form, $form_state);
+
+    // Remove unneeded properties.
+    foreach ($items as $item) {
+      unset($item->_remove);
+    }
+
+    // Decrease the items count.
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
+    $field_state['items_count']--;
+    static::setWidgetState($parents, $field_name, $form_state, $field_state);
+
+    $form_state->setRebuild();
+  }
+
+  /**
+   * Ajax callback for the "Remove" button.
+   */
+  public static function removeAjax(array $form, FormStateInterface $form_state) {
+    $button = $form_state->getTriggeringElement();
+
+    // Go two levels up in the form, to the widget container.
+    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -2));
     return $element;
   }
 
@@ -141,62 +180,84 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
 
     // Assign a unique identifier to each widget.
     $id_prefix = implode('-', array_merge($parents, [$field_name]));
-    $wrapper_id = Html::getUniqueId($id_prefix . '-add-more-wrapper');
+    $wrapper_id = Html::getUniqueId($id_prefix . '-wrapper');
     $this->setWrapperId($wrapper_id);
-
-    // Load the items for form rebuilds from the field state as they might not
-    // be in $form_state->getValues() because of validation limitations. Also,
-    // they are only passed in as $items when editing existing entities.
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-    if (isset($field_state['items'])) {
-      $items->setValue($field_state['items']);
-    }
-
-    // Lower the 'items_count' field state property in order to prevent the
-    // parent implementation to append an extra empty item.
-    if ($cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      $field_state['items_count'] = (count($items) > 1) ? count($items) - 1 : 0;
-      static::setWidgetState($parents, $field_name, $form_state, $field_state);
-    }
 
     $elements = parent::formMultipleElements($items, $form, $form_state);
 
-    if ($elements) {
-      if (isset($elements['add_more'])) {
-        // Update the HTML wrapper ID with the one generated by us.
-        $elements['#prefix'] = '<div id="' . $this->getWrapperId() . '">';
-
-        $add_more_button = $elements['add_more'];
-        $add_more_button['#value'] = $this->t('Add item');
-        $add_more_button['#ajax']['callback'] = [get_class($this), 'getWidgetElementAjax'];
-        $add_more_button['#ajax']['wrapper'] = $this->getWrapperId();
-
-        $elements['add_more'] = [
-          '#type' => 'container',
-          '#tree' => TRUE,
-          '#attributes' => ['class' => ['form--inline']],
-          'new_item' => parent::formElement($items, -1, [], $form, $form_state),
-          'submit' => $add_more_button,
-        ];
+    // Remove empty elements generated by the parent method.
+    foreach ($elements as $key => $element) {
+      if (Element::child($key) && is_numeric($key) && !isset($element['target_id'])) {
+        unset($elements[$key]);
       }
     }
+    $items->filterEmptyItems();
+    $elements['#max_delta'] = count($items) - 1;
+
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
+    if ($cardinality === FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED || $field_state['items_count'] < $cardinality) {
+      $elements['add_more'] = [
+        '#type' => 'container',
+        '#tree' => TRUE,
+        '#attributes' => ['class' => ['form--inline']],
+        'new_item' => parent::formElement($items, -1, [], $form, $form_state),
+        'submit' => [
+          '#type' => 'submit',
+          '#name' => strtr($id_prefix, '-', '_') . '_add_more',
+          '#value' => $this->t('Add item'),
+          '#attributes' => ['class' => ['field-add-more-submit']],
+          '#limit_validation_errors' => [array_merge($parents, [$field_name])],
+          '#submit' => [[get_class($this), 'addItemSubmit']],
+          '#ajax' => [
+            'callback' => [get_class($this), 'addItemAjax'],
+            'wrapper' => $this->getWrapperId(),
+            'effect' => 'fade',
+          ],
+        ],
+      ];
+    }
+
+    // Update the HTML wrapper ID with the one generated by us.
+    $elements['#prefix'] = '<div id="' . $this->getWrapperId() . '">';
+    $elements['#suffix'] = '</div>';
 
     return $elements;
   }
 
   /**
-   * {@inheritdoc}
+   * Submission handler for the "Add item" button.
    */
-  public static function getWidgetElementAjax(array $form, FormStateInterface $form_state) {
+  public static function addItemSubmit(array $form, FormStateInterface $form_state) {
+    $button = $form_state->getTriggeringElement();
+
+    // Go two levels up in the form, to the widgets container.
+    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -2));
+    $field_name = $element['#field_name'];
+    $parents = $element['#field_parents'];
+
+    $submitted_values = NestedArray::getValue($form_state->getValues(), array_slice($button['#parents'], 0, -1));
+    $items = $form_state->getFormObject()->getEntity()->get($field_name);
+    $items->appendItem($submitted_values['new_item']);
+
+    // Increment the items count.
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
+    $field_state['items_count']++;
+    static::setWidgetState($parents, $field_name, $form_state, $field_state);
+
+    $form_state->setRebuild();
+  }
+
+  /**
+   * Ajax callback for the "Add item" button.
+   */
+  public static function addItemAjax(array $form, FormStateInterface $form_state) {
     $button = $form_state->getTriggeringElement();
 
     // Go two levels up in the form, to the widgets container.
     $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -2));
 
-    // Ensure the widget allows adding additional items.
-    if ($element['#cardinality'] != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      return NULL;
-    }
+    // Remove the submitted value from the 'Add item' textfield.
+    $element['add_more']['new_item']['target_id']['#value'] = NULL;
 
     // Add a DIV around the delta receiving the Ajax effect.
     $delta = $element['#max_delta'];
@@ -204,67 +265,6 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
     $element[$delta]['#suffix'] = (isset($element[$delta]['#suffix']) ? $element[$delta]['#suffix'] : '') . '</div>';
 
     return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function addMoreSubmit(array $form, FormStateInterface $form_state) {
-    // During the form rebuild, formElement() will create field item widget
-    // elements using re-indexed deltas, so clear out FormState::$input to
-    // avoid a mismatch between old and new deltas. The rebuilt elements will
-    // have #default_value set appropriately for the current state of the field,
-    // so nothing is lost in doing this.
-    $button = $form_state->getTriggeringElement();
-    $parents = array_slice($button['#parents'], 0, -2);
-    NestedArray::setValue($form_state->getUserInput(), $parents, NULL);
-
-    // Go two levels up in the form, to the widgets container.
-    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -2));
-    $field_name = $element['#field_name'];
-    $parents = $element['#field_parents'];
-
-    $submitted_values = NestedArray::getValue($form_state->getValues(), array_slice($button['#parents'], 0, -2));
-
-    // Check submitted values for empty items.
-    $new_values = [];
-    foreach ($submitted_values as $delta => $submitted_value) {
-      if ($delta !== 'add_more' && (isset($submitted_value['target_id']) || isset($submitted_value['entity']))) {
-        $new_values[] = $submitted_value;
-      }
-
-      if ($delta === 'add_more' && (isset($submitted_value['new_item']['target_id']) || isset($submitted_value['new_item']['entity']))) {
-        $new_values[] = $submitted_value['new_item'];
-      }
-    }
-
-    // Re-index deltas after removing empty items.
-    $submitted_values = array_values($new_values);
-
-    // Update form_state values.
-    NestedArray::setValue($form_state->getValues(), array_slice($button['#parents'], 0, -2), $submitted_values);
-
-    // Update items.
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-    $field_state['items'] = $submitted_values;
-    static::setWidgetState($parents, $field_name, $form_state, $field_state);
-
-    $form_state->setRebuild();
-  }
-
-  /**
-   * Submission handler for the "Remove" button.
-   */
-  public static function removeSubmit(array $form, FormStateInterface $form_state) {
-    $button = $form_state->getTriggeringElement();
-
-    // Go one level up in the form, to the single field item element container.
-    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
-
-    $form_state->setValueForElement($element, ['target_id' => NULL, 'entity' => NULL]);
-
-    // Call the generic submit handler which takes care of removing the item.
-    static::addMoreSubmit($form, $form_state);
   }
 
   /**

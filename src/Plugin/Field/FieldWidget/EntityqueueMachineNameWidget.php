@@ -162,7 +162,9 @@ class EntityqueueMachineNameWidget extends WidgetBase implements ContainerFactor
       '#machine_name' => [
         // We don't need the default form-level validation because we enforce
         // the 'UniqueField' constraint on the field that uses this widget.
-        'exists' => '\Drupal\entityqueue\Entity\EntitySubqueue::load',
+        'exists' => function () {
+          return FALSE;
+        },
         'label' => $this->fieldDefinition->getLabel(),
         'replace_pattern' => $this->getSetting('replace_pattern'),
         'replace' => $this->getSetting('replace'),

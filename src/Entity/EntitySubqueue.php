@@ -180,6 +180,7 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
       // In order to work around the InnoDB 191 character limit on utf8mb4
       // primary keys, we set the character set for the field to ASCII.
       ->setSetting('is_ascii', TRUE)
+      ->addConstraint('UniqueField', [])
       ->setDisplayOptions('form', [
         'type' => 'entityqueue_machine_name',
         'weight' => -5,

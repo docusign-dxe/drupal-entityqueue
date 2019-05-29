@@ -146,14 +146,6 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('The name of the subqueue.'))
-      ->setReadOnly(TRUE)
-      // In order to work around the InnoDB 191 character limit on utf8mb4
-      // primary keys, we set the character set for the field to ASCII.
-      ->setSetting('is_ascii', TRUE);
-
     $fields['uuid'] = BaseFieldDefinition::create('uuid')
       ->setLabel(t('UUID'))
       ->setDescription(t('The subqueue UUID.'))
@@ -180,6 +172,21 @@ class EntitySubqueue extends ContentEntityBase implements EntitySubqueueInterfac
         'weight' => -10,
       ])
       ->setDisplayConfigurable('form', TRUE);
+
+    $fields['name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Name'))
+      ->setDescription(t('The name of the subqueue.'))
+      ->setReadOnly(TRUE)
+      // In order to work around the InnoDB 191 character limit on utf8mb4
+      // primary keys, we set the character set for the field to ASCII.
+      ->setSetting('is_ascii', TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'entityqueue_machine_name',
+        'weight' => -5,
+        'settings' => [
+          'source_field' => 'title',
+        ],
+      ]);
 
     $fields['items'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Items'))

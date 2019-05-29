@@ -95,7 +95,44 @@ class EntitySubqueueForm extends ContentEntityForm {
     $form['#prefix'] = '<div id="' . $wrapper_id . '">';
     $form['#suffix'] = '</div>';
 
+    // @todo Use the 'Machine name' field widget when
+    //   https://www.drupal.org/node/2685749 is committed.
+    $element_info = $this->elementInfo->getInfo('machine_name');
+    $form['name'] = [
+      '#type' => 'machine_name',
+      '#default_value' => $this->entity->id(),
+      '#source_field' => 'title',
+      '#process' => array_merge([[get_class($this), 'processMachineNameSource']], $element_info['#process']),
+      '#machine_name' => [
+        'exists' => '\Drupal\entityqueue\Entity\EntitySubqueue::load',
+      ],
+      '#disabled' => !$this->entity->isNew(),
+      '#weight' => -5,
+      '#access' => !$this->entity->getQueue()->getHandlerPlugin()->hasAutomatedSubqueues(),
+    ];
+
     return $form;
+  }
+
+  /**
+   * Form API callback: Sets the 'source' property of a machine_name element.
+   *
+   * This method is assigned as a #process callback in formElement() method.
+   */
+  public static function processMachineNameSource($element, FormStateInterface $form_state, $form) {
+    $source_field_state = WidgetBase::getWidgetState($form['#parents'], $element['#source_field'], $form_state);
+
+    // Hide the field widget if the source field is not configured properly or
+    // if it doesn't exist in the form.
+    if (empty($element['#source_field']) || empty($source_field_state['array_parents'])) {
+      $element['#access'] = FALSE;
+    }
+    else {
+      $source_field_element = NestedArray::getValue($form_state->getCompleteForm(), $source_field_state['array_parents']);
+      $element['#machine_name']['source'] = $source_field_element[0]['value']['#array_parents'];
+    }
+
+    return $element;
   }
 
   /**

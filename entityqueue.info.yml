@@ -4,3 +4,6 @@ description: 'Allows users to collect entities in arbitrarily ordered lists.'
 package: Entityqueue
 core: 8.x
 configure: entity.entity_queue.collection
+
+dependencies:
+  - drupal:system (>= 8.7.2)

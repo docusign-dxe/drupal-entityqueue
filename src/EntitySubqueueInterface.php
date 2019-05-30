@@ -5,12 +5,14 @@ namespace Drupal\entityqueue;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
- * Provides an interface defining a EntityQueue entity.
+ * Provides an interface defining a EntitySubqueue entity.
  */
-interface EntitySubqueueInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+interface EntitySubqueueInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface, EntityPublishedInterface, RevisionLogInterface {
 
   /**
    * Returns the subqueue's parent queue entity.

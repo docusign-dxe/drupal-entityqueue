@@ -219,7 +219,7 @@ class EntityQueueUIController extends ControllerBase {
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $route_match->getParameter($entity_type_id);
 
-    if ($this->getAvailableQueuesForEntity($entity)) {
+    if ($entity && $this->getAvailableQueuesForEntity($entity)) {
       return AccessResult::allowed();
     }
 

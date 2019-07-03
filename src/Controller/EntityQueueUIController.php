@@ -7,6 +7,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\entityqueue\EntityQueueInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -14,11 +15,39 @@ use Drupal\entityqueue\EntitySubqueueInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\entityqueue\EntityQueueRepositoryInterface;
 
 /**
  * Returns responses for Entityqueue UI routes.
  */
 class EntityQueueUIController extends ControllerBase {
+
+  /**
+   * The Entityqueue repository service.
+   *
+   * @var EntityQueueRepositoryInterface
+   */
+  protected $entityQueueRepository;
+
+  /**
+   * Constructs a EntityQueueUIController object
+   *
+   * @param EntityQueueRepositoryInterface $entityqueue_respository
+   *   The Entityqueue repository service.
+   */
+  public function __construct(EntityQueueRepositoryInterface $entityqueue_respository) {
+    $this->entityQueueRepository = $entityqueue_respository;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entityqueue.repository')
+    );
+  }
+
 
   /**
    * Provides a list of all the subqueues of an entity queue.
@@ -54,7 +83,7 @@ class EntityQueueUIController extends ControllerBase {
       $entity = $route_match->getParameter($entity_type_id);
     }
 
-    $queues = $this->getAvailableQueuesForEntity($entity);
+    $queues = $this->entityQueueRepository->getAvailableQueuesForEntity($entity);
     $subqueues = $this->entityTypeManager()->getStorage('entity_subqueue')->loadByProperties(['queue' => array_keys($queues)]);
     $list_builder = $this->entityTypeManager()->getListBuilder('entity_subqueue');
 
@@ -219,39 +248,10 @@ class EntityQueueUIController extends ControllerBase {
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $route_match->getParameter($entity_type_id);
 
-    if ($entity && $this->getAvailableQueuesForEntity($entity)) {
+    if ($entity && $this->entityQueueRepository->getAvailableQueuesForEntity($entity)) {
       return AccessResult::allowed();
     }
 
     return AccessResult::forbidden();
   }
-
-  /**
-   * Gets a list of queues which can hold this entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   An entity object.
-   *
-   * @return \Drupal\entityqueue\EntityQueueInterface[]
-   *   An array of entity queues which can hold this entity.
-   */
-  protected function getAvailableQueuesForEntity(EntityInterface $entity) {
-    $storage = $this->entityTypeManager()->getStorage('entity_queue');
-
-    $queue_ids = $storage->getQuery()
-      ->condition('entity_settings.target_type', $entity->getEntityTypeId(), '=')
-      ->condition('status', TRUE)
-      ->execute();
-
-    $queues = $storage->loadMultiple($queue_ids);
-    $queues = array_filter($queues, function ($queue) use ($entity) {
-      /** @var \Drupal\entityqueue\EntityQueueInterface $queue */
-      $queue_settings = $queue->getEntitySettings();
-      $target_bundles = &$queue_settings['handler_settings']['target_bundles'];
-      return ($target_bundles === NULL || in_array($entity->bundle(), $target_bundles, TRUE));
-    });
-
-    return $queues;
-  }
-
 }

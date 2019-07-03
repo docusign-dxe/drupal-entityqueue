@@ -103,7 +103,7 @@ class EntityQueueUIController extends ControllerBase {
     foreach ($subqueues as $subqueue_id => $subqueue) {
       $row = $list_builder->buildRow($subqueue);
 
-      // Check if entity is in queue
+      // Check if entity is in queue.
       $subqueue_items = $subqueue->get('items')->getValue();
       if (in_array($entity->id(), array_column($subqueue_items, 'target_id'), TRUE)) {
         $row['operations']['data']['#links'] = [

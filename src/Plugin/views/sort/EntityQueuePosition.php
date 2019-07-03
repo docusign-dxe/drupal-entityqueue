@@ -93,7 +93,7 @@ class EntityQueuePosition extends SortPluginBase {
       if ($this->currentUser->hasPermission('administer views')) {
         $this->messenger->addMessage($this->t('In order to sort by the queue position, you need to add the Entityqueue: Queue relationship on View: @view with display: @display', [
           '@view' => $this->view->storage->label(),
-          '@display' => $this->view->current_display
+          '@display' => $this->view->current_display,
         ]), MessengerInterface::TYPE_ERROR);
       }
     }

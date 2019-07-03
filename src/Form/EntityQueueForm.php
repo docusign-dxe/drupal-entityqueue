@@ -154,7 +154,7 @@ class EntityQueueForm extends BundleEntityFormBase {
       '#type' => 'container',
       '#attributes' => ['class' => ['form--inline', 'clearfix']],
       '#process' => [
-        [EntityReferenceItem::class, 'formProcessMergeParent']
+        [EntityReferenceItem::class, 'formProcessMergeParent'],
       ],
     ];
     $form['queue_settings']['size']['min_size'] = [

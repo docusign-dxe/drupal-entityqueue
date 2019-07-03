@@ -33,7 +33,7 @@ interface EntitySubqueueInterface extends ContentEntityInterface, EntityChangedI
   public function setQueue(EntityQueueInterface $queue);
 
   /**
-   * Adds an entity to a subqueue
+   * Adds an entity to a subqueue.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   An entity object.
@@ -43,7 +43,7 @@ interface EntitySubqueueInterface extends ContentEntityInterface, EntityChangedI
   public function addItem(EntityInterface $entity);
 
   /**
-   * Removes an entity from a subqueue
+   * Removes an entity from a subqueue.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   An entity object.

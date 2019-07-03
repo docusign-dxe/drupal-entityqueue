@@ -54,7 +54,6 @@ class EntitySubqueueListBuilder extends EntityListBuilder {
     return $query->execute();
   }
 
-
   /**
    * {@inheritdoc}
    */

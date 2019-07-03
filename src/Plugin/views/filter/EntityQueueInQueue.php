@@ -87,7 +87,7 @@ class EntityQueueInQueue extends BooleanOperator {
     if ($entity_queue_relationship) {
       $subqueue_items_table_alias = $entity_queue_relationship->first_alias;
       $field_field = $this->definition['field field'];
-      $operator  = $this->value ? 'IS NOT NULL' : 'IS NULL';
+      $operator = $this->value ? 'IS NOT NULL' : 'IS NULL';
       $condition = "$subqueue_items_table_alias.$field_field $operator";
 
       $this->query->addWhereExpression($this->options['group'], $condition);
@@ -96,7 +96,7 @@ class EntityQueueInQueue extends BooleanOperator {
       if ($this->currentUser->hasPermission('administer views')) {
         $this->messenger->addMessage($this->t('In order to filter on items from the queue, you need to add the Entityqueue: Queue relationship on View: @view with display: @display', [
           '@view' => $this->view->storage->label(),
-          '@display' => $this->view->current_display
+          '@display' => $this->view->current_display,
         ]), MessengerInterface::TYPE_ERROR);
       }
     }

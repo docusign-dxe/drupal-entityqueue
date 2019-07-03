@@ -161,7 +161,7 @@ class EntityQueue extends ConfigEntityBundleBase implements EntityQueueInterface
     return $this->queue_settings + [
       // Ensure that we always have an empty array by default for the
       // 'handler_settings', regardless of the incoming form values.
-      'handler_settings' => []
+      'handler_settings' => [],
     ];
   }
 

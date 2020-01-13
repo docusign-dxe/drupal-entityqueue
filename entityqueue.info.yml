@@ -2,7 +2,7 @@ name: Entityqueue
 type: module
 description: 'Allows users to collect entities in arbitrarily ordered lists.'
 package: Entityqueue
-core: 8.x
+core_version_requirement: ^8.7.7 || ^9
 configure: entity.entity_queue.collection
 
 dependencies:

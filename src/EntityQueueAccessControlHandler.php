@@ -26,6 +26,8 @@ class EntityQueueAccessControlHandler extends EntityAccessControlHandler {
       break;
 
       case 'update':
+      case 'enable':
+      case 'disable':
         return AccessResult::allowedIfHasPermissions($account, ["update {$entity->id()} entityqueue", 'manipulate all entityqueues', 'administer entityqueue'], 'OR');
 
       break;

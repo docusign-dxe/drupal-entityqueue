@@ -120,7 +120,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
           '#default_value' => !$referenced_entities[$delta]->isNew() ? $referenced_entities[$delta]->id() : NULL,
           '#weight' => 0,
         ],
-        '_edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => \Drupal::destination()->getAsArray()])->toRenderable() + [
+        '_edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => ['destination' => \Drupal::service('path.current')->getPath()]])->toRenderable() + [
           '#attributes' => ['class' => ['form-item']],
           '#access' => (bool) $this->getSetting('link_to_edit_form'),
         ],

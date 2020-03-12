@@ -38,7 +38,7 @@ use Drupal\user\EntityOwnerTrait;
  *     },
  *     "access" = "Drupal\entityqueue\EntitySubqueueAccessControlHandler",
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
+ *       "html" = "Drupal\entityqueue\Routing\EntitySubqueueRouteProvider",
  *     },
  *     "list_builder" = "Drupal\entityqueue\EntitySubqueueListBuilder",
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
@@ -68,6 +68,7 @@ use Drupal\user\EntityOwnerTrait;
  *   field_ui_base_route = "entity.entity_queue.edit_form",
  *   permission_granularity = "bundle",
  *   links = {
+ *     "canonical" = "/admin/structure/entityqueue/{entity_queue}/{entity_subqueue}",
  *     "edit-form" = "/admin/structure/entityqueue/{entity_queue}/{entity_subqueue}",
  *     "delete-form" = "/admin/structure/entityqueue/{entity_queue}/{entity_subqueue}/delete",
  *     "collection" = "/admin/structure/entityqueue/{entity_queue}/list",

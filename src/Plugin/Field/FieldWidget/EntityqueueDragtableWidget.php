@@ -120,10 +120,6 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
           '#default_value' => !$referenced_entities[$delta]->isNew() ? $referenced_entities[$delta]->id() : NULL,
           '#weight' => 0,
         ],
-        '_edit' => $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => ['destination' => \Drupal::service('path.current')->getPath()]])->toRenderable() + [
-          '#attributes' => ['class' => ['form-item']],
-          '#access' => (bool) $this->getSetting('link_to_edit_form'),
-        ],
         '_remove' => [
           '#type' => 'submit',
           '#name' => implode('_', array_merge($form['#parents'], [$field_name, $delta])) . '_remove',
@@ -139,6 +135,14 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
           ],
         ],
       ];
+
+      // Show a link to the edit form of the entity if the entity type is
+      // editable.
+      if ($this->getSetting('link_to_edit_form') && $referenced_entities[$delta]->getEntityType()->hasLinkTemplate('edit-form')) {
+        $element['_edit'] = $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => ['destination' => \Drupal::service('path.current')->getPath()]])->toRenderable() + [
+          '#attributes' => ['class' => ['form-item']],
+        ];
+      }
     }
 
     return $element;

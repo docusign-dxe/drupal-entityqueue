@@ -2,7 +2,7 @@
 
 namespace Drupal\entityqueue\Controller;
 
-use Drupal\Core\Ajax\AlertCommand;
+use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatch;
@@ -21,6 +21,8 @@ use Drupal\entityqueue\EntityQueueRepositoryInterface;
  * Returns responses for Entityqueue UI routes.
  */
 class EntityQueueUIController extends ControllerBase {
+
+  use AjaxHelperTrait;
 
   /**
    * The Entityqueue repository service.
@@ -212,20 +214,37 @@ class EntityQueueUIController extends ControllerBase {
     $entity_subqueue->$op($entity);
 
     // Run validation.
-    if (count($violations = $entity_subqueue->validate()) === 0) {
-      // Save subqueue.
+    $violations = $entity_subqueue->validate();
+
+    // Save subqueue.
+    if (count($violations) === 0) {
       $entity_subqueue->save();
     }
 
     // If the request is via AJAX, return the rendered list as JSON.
-    if ($request->request->get('js')) {
+    if ($this->isAjax()) {
       $route_match = RouteMatch::createFromRequest($request);
-      $list = $this->subqueueListForEntity($route_match, $entity->getEntityTypeId(), $entity);
-      $response = new AjaxResponse();
-      $response->addCommand(new ReplaceCommand('#entity-subqueue-list', $list));
-      if (count($violations) > 0) {
-        $response->addCommand(new AlertCommand($this->t('Failed to add to queue, as pre-save validation failed')));
+      $content = $this->subqueueListForEntity($route_match, $entity->getEntityTypeId(), $entity);
+
+      // Also display the validation errors if there are any.
+      if ($violations) {
+        $content['errors'] = [
+          '#theme' => 'status_messages',
+          '#message_list' => [
+            'error' => [$this->t('The operation could not be performed for the following reasons:')]
+          ],
+          '#status_headings' => [
+            'error' => t('Error message'),
+          ],
+          '#weight' => -10,
+        ];
+        foreach ($violations as $violation) {
+          $content['errors']['#message_list']['error'][] = $violation->getMessage();
+        }
       }
+
+      $response = new AjaxResponse();
+      $response->addCommand(new ReplaceCommand('#entity-subqueue-list', $content));
       return $response;
     }
 

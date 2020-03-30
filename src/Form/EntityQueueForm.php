@@ -275,6 +275,12 @@ class EntityQueueForm extends BundleEntityFormBase {
       $form['entity_settings']['settings']['handler_settings']['target_bundles']['#required'] = FALSE;
     }
 
+    // Also, the 'auto-create' option is mostly useless and confusing in the
+    // entityqueue UI.
+    if (isset($form['entity_settings']['settings']['handler_settings']['auto_create'])) {
+      $form['entity_settings']['settings']['handler_settings']['auto_create']['#access'] = FALSE;
+    }
+
     return $form;
   }
 

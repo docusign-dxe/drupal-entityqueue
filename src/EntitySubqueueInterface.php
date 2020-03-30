@@ -53,6 +53,27 @@ interface EntitySubqueueInterface extends ContentEntityInterface, EntityChangedI
   public function removeItem(EntityInterface $entity);
 
   /**
+   * Reverses the items of this subqueue.
+   *
+   * @return $this
+   */
+  public function reverseItems();
+
+  /**
+   * Shuffles the items of this subqueue.
+   *
+   * @return $this
+   */
+  public function shuffleItems();
+
+  /**
+   * Removes all the items from this subqueue.
+   *
+   * @return $this
+   */
+  public function clearItems();
+
+  /**
    * Gets the subqueue title.
    *
    * @return string

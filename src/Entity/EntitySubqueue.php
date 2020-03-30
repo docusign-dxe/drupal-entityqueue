@@ -295,6 +295,33 @@ class EntitySubqueue extends EditorialContentEntityBase implements EntitySubqueu
   /**
    * {@inheritdoc}
    */
+  public function reverseItems() {
+    $subqueue_items = $this->get('items')->getValue();
+    $this->get('items')->setValue(array_reverse($subqueue_items));
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function shuffleItems() {
+    $subqueue_items = $this->get('items')->getValue();
+    shuffle($subqueue_items);
+    $this->get('items')->setValue($subqueue_items);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearItems() {
+    $this->get('items')->setValue(NULL);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function toUrl($rel = 'canonical', array $options = []) {
     $url = parent::toUrl($rel, $options);
 

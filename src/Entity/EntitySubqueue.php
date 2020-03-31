@@ -179,7 +179,7 @@ class EntitySubqueue extends EditorialContentEntityBase implements EntitySubqueu
 
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
-      ->setDescription(t('The name of the subqueue.'))
+      ->setDescription(t('The ID (machine name) of the subqueue.'))
       ->setReadOnly(TRUE)
       // In order to work around the InnoDB 191 character limit on utf8mb4
       // primary keys, we set the character set for the field to ASCII.

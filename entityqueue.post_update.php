@@ -93,3 +93,22 @@ function entityqueue_post_update_make_entity_subqueue_revisionable_and_translata
 
   return t('Entity Subqueues have been converted to be revisionable and translatable.');
 }
+
+/**
+ * Remove the obsolete 'reverse_in_admin' queue setting.
+ */
+function entityqueue_post_update_remove_reverse_in_admin_setting() {
+  $config_factory = \Drupal::configFactory();
+
+  // Iterate on all queues.
+  foreach ($config_factory->listAll('entityqueue.entity_queue.') as $queue_id) {
+    $queue_config = $config_factory->getEditable($queue_id);
+
+    $queue_settings = $queue_config->get('queue_settings');
+    unset($queue_settings['reverse_in_admin']);
+    $queue_settings['reverse'] = FALSE;
+    $queue_config->set('queue_settings', $queue_settings);
+
+    $queue_config->save(TRUE);
+  }
+}

@@ -13,6 +13,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\entityqueue\EntityQueueInterface;
 use Drupal\entityqueue\EntitySubqueueInterface;
+use Drupal\entityqueue\EntitySubqueueItemsFieldItemList;
 use Drupal\user\EntityOwnerTrait;
 
 /**
@@ -105,15 +106,17 @@ class EntitySubqueue extends EditorialContentEntityBase implements EntitySubqueu
     /** @var \Drupal\entityqueue\EntityQueueInterface $queue */
     $queue = $this->getQueue();
     $max_size = $queue->getMaximumSize();
-    $act_as_queue = $queue->getActAsQueue();
-
-    $items = $this->get('items')->getValue();
-    $number_of_items = count($items);
 
     // Remove extra items from the front of the queue if the maximum size is
     // exceeded.
-    if ($act_as_queue && $number_of_items > $max_size) {
-      $items = array_slice($items, -$max_size);
+    $items = $this->get('items')->getValue();
+    if ($queue->getActAsQueue() && count($items) > $max_size) {
+      if ($queue->isReversed()) {
+        $items = array_slice($items, 0, $max_size);
+      }
+      else {
+        $items = array_slice($items, -$max_size);
+      }
 
       $this->set('items', $items);
     }
@@ -207,6 +210,7 @@ class EntitySubqueue extends EditorialContentEntityBase implements EntitySubqueu
 
     $fields['items'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Items'))
+      ->setClass(EntitySubqueueItemsFieldItemList::class)
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       // This setting is overridden per bundle (queue) in
       // static::bundleFieldDefinitions(), but we need to default to a target

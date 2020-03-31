@@ -177,18 +177,18 @@ class EntityQueueForm extends BundleEntityFormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Act as queue'),
       '#default_value' => $queue->getActAsQueue(),
-      '#description' => $this->t('When enabled, adding more than the maximum number of items will remove extra items from the top of the queue.'),
+      '#description' => $this->t('When enabled, adding more than the maximum number of items will remove extra items from the queue.'),
       '#states' => [
         'invisible' => [
           ':input[name="queue_settings[max_size]"]' => ['value' => 0],
         ],
       ],
     ];
-    $form['queue_settings']['reverse_in_admin'] = [
+    $form['queue_settings']['reverse'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Reverse order in admin view'),
-      '#default_value' => $queue->getReverseInAdmin(),
-      '#description' => $this->t('Ordinarily queues are arranged with the front of the queue (where items will be removed) on top and the back (where items will be added) on the bottom. If checked, this will display the queue such that items will be added to the top and removed from the bottom.'),
+      '#title' => $this->t('Reverse'),
+      '#default_value' => $queue->isReversed(),
+      '#description' => $this->t('By default, new items are added to the bottom of the queue. If this option is checked, new items will be added to the top of the queue.'),
     ];
 
     // We have to duplicate all the code from

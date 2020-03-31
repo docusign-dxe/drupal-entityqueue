@@ -1,21 +1,21 @@
 <?php
 
-namespace Drupal\entityqueue\Plugin\views\sort;
+namespace Drupal\entityqueue\Plugin\views\field;
 
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\entityqueue\Plugin\views\relationship\EntityQueueRelationship;
-use Drupal\views\Plugin\views\sort\SortPluginBase;
+use Drupal\views\Plugin\views\field\NumericField;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Sort handler for ordering the results based on their queue position.
+ * Field handler to display the position of an item in a queue.
  *
- * @ingroup views_sort_handlers
+ * @ingroup views_field_handlers
  *
- * @ViewsSort("entity_queue_in_queue")
+ * @ViewsField("entity_queue_position")
  */
-class EntityQueueInQueue extends SortPluginBase {
+class EntityQueuePosition extends NumericField {
 
   /**
    * The current user.
@@ -32,7 +32,7 @@ class EntityQueueInQueue extends SortPluginBase {
   protected $messenger;
 
   /**
-   * Constructs a new EntityQueueInQueue object.
+   * Constructor.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -86,12 +86,11 @@ class EntityQueueInQueue extends SortPluginBase {
 
     if ($entity_queue_relationship) {
       // Add the field.
-      $subqueue_items_table_alias = $entity_queue_relationship->first_alias;
-      $this->query->addOrderBy($subqueue_items_table_alias, 'bundle', $this->options['order']);
+      $this->field_alias = $this->query->addField($entity_queue_relationship->first_alias, $this->realField);
     }
     else {
       if ($this->currentUser->hasPermission('administer views')) {
-        $this->messenger->addMessage($this->t('In order to sort by whether an item is in a queue or not, you need to add an <em>Entityqueue</em> relationship on the %display display of the %view view.', [
+        $this->messenger->addMessage($this->t('In order to display the item position in the queue, you need to add an <em>Entityqueue</em> relationship on the %display display of the %view view.', [
           '%view' => $this->view->storage->label(),
           '%display' => $this->view->current_display,
         ]), MessengerInterface::TYPE_ERROR);

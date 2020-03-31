@@ -94,9 +94,9 @@ class EntityQueueInQueue extends BooleanOperator {
     }
     else {
       if ($this->currentUser->hasPermission('administer views')) {
-        $this->messenger->addMessage($this->t('In order to filter on items from the queue, you need to add the Entityqueue: Queue relationship on View: @view with display: @display', [
-          '@view' => $this->view->storage->label(),
-          '@display' => $this->view->current_display,
+        $this->messenger->addMessage($this->t('In order to filter on items from the queue, you need to add an <em>Entityqueue</em> relationship on the %display display of the %view view.', [
+          '%view' => $this->view->storage->label(),
+          '%display' => $this->view->current_display,
         ]), MessengerInterface::TYPE_ERROR);
       }
     }

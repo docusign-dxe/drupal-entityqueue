@@ -34,4 +34,13 @@ class EntityQueueHandler extends Plugin {
    */
   public $title;
 
+  /**
+   * The description of the queue handler plugin.
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
+   */
+  public $description;
+
 }

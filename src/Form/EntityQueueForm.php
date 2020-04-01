@@ -109,7 +109,7 @@ class EntityQueueForm extends BundleEntityFormBase {
     $handler_plugin = $this->getHandlerPlugin($queue, $form_state);
     $form['handler'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Type'),
+      '#title' => $this->t('Queue type'),
       '#options' => $this->entityQueueHandlerManager->getAllEntityQueueHandlers(),
       '#default_value' => $handler_plugin->getPluginId(),
       '#required' => TRUE,
@@ -120,6 +120,12 @@ class EntityQueueForm extends BundleEntityFormBase {
         'trigger_as' => ['name' => 'handler_change'],
       ],
     ];
+    foreach ($this->entityQueueHandlerManager->getDefinitions() as $handler_id => $definition) {
+      if (!empty($definition['description'])) {
+        $form['handler'][$handler_id]['#description'] = $definition['description'];
+      }
+    }
+
     $form['handler_change'] = [
       '#type' => 'submit',
       '#name' => 'handler_change',
@@ -141,7 +147,13 @@ class EntityQueueForm extends BundleEntityFormBase {
 
     $form['handler_settings_wrapper']['handler_settings'] = [];
     $subform_state = SubformState::createForSubform($form['handler_settings_wrapper']['handler_settings'], $form, $form_state);
-    $form['handler_settings_wrapper']['handler_settings'] = $handler_plugin->buildConfigurationForm($form['handler_settings_wrapper']['handler_settings'], $subform_state);
+    if ($handler_settings = $handler_plugin->buildConfigurationForm($form['handler_settings_wrapper']['handler_settings'], $subform_state)) {
+      $form['handler_settings_wrapper']['handler_settings'] = $handler_settings + [
+        '#type' => 'details',
+        '#title' => $this->t('@handler settings', ['@handler' => $handler_plugin->getPluginDefinition()['title']]),
+        '#open' => TRUE,
+      ];
+    }
 
     $form['settings'] = [
       '#type' => 'vertical_tabs',
@@ -305,6 +317,7 @@ class EntityQueueForm extends BundleEntityFormBase {
       $handler_configuration = $handler_id === $stored_handler_id ? $entity->getHandlerConfiguration() : [];
 
       $handler_plugin = $this->entityQueueHandlerManager->createInstance($handler_id, $handler_configuration);
+      $handler_plugin->setQueue($entity);
       $form_state->set('handler_plugin', $handler_plugin);
     }
     return $handler_plugin;

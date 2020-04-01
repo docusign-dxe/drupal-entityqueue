@@ -16,7 +16,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @EntityQueueHandler(
  *   id = "simple",
- *   title = @Translation("Simple queue")
+ *   title = @Translation("Simple queue"),
+ *   description = @Translation("Provides a queue with a single (fixed) subqueue."),
  * )
  */
 class Simple extends EntityQueueHandlerBase implements ContainerFactoryPluginInterface {

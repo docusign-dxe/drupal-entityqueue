@@ -70,7 +70,7 @@ class EntityQueueCrudTest extends KernelTestBase {
     $this->assertEquals($expected->getMinimumSize(), $actual->getMinimumSize());
     $this->assertEquals($expected->getMaximumSize(), $actual->getMaximumSize());
     $this->assertEquals($expected->getActAsQueue(), $actual->getActAsQueue());
-    $this->assertEquals($expected->getReverseInAdmin(), $actual->getReverseInAdmin());
+    $this->assertEquals($expected->isReversed(), $actual->isReversed());
     $this->assertEquals($expected->getHandlerPlugin(), $actual->getHandlerPlugin());
     $this->assertEquals($expected->getPluginCollections(), $actual->getPluginCollections());
   }

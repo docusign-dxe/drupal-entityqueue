@@ -227,7 +227,7 @@ class EntityQueueUIController extends ControllerBase {
       $content = $this->subqueueListForEntity($route_match, $entity->getEntityTypeId(), $entity);
 
       // Also display the validation errors if there are any.
-      if ($violations) {
+      if (count($violations)) {
         $content['errors'] = [
           '#theme' => 'status_messages',
           '#message_list' => [

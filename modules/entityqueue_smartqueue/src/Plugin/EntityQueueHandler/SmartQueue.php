@@ -79,7 +79,7 @@ class SmartQueue extends Multiple implements ContainerFactoryPluginInterface {
   public function defaultConfiguration() {
     return parent::defaultConfiguration() + [
       'entity_type' => '',
-      'bundle' => '',
+      'bundles' => '',
     ];
   }
 

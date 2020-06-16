@@ -117,7 +117,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
         '#attributes' => ['class' => ['form--inline']],
         'target_id' => [
           '#type' => 'item',
-          '#markup' => ($entity->access('view label')) ? $entity_label : t('- Restricted access -'),
+          '#markup' => ($entity->access('view label')) ? $entity_label : $this->t('- Restricted access -'),
           '#default_value' => !$referenced_entities[$delta]->isNew() ? $referenced_entities[$delta]->id() : NULL,
           '#weight' => 0,
         ],

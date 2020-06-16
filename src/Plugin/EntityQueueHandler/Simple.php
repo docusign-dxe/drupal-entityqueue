@@ -101,7 +101,7 @@ class Simple extends EntityQueueHandlerBase implements ContainerFactoryPluginInt
     // Add a 'Translate' operation if translation is enabled for this queue.
     if ($this->moduleHandler->moduleExists('content_translation') && content_translation_translate_access($subqueue)->isAllowed()) {
       $operations['translate_subqueue'] = [
-        'title' => t('Translate subqueue'),
+        'title' => $this->t('Translate subqueue'),
         'url' => $subqueue->toUrl('drupal:content-translation-overview'),
         'weight' => -8,
       ];

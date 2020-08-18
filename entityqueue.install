@@ -144,3 +144,30 @@ function entityqueue_update_8005() {
 
   return t('The revision metadata fields have been added to Entity Subqueues.');
 }
+
+/**
+ * Make entity_subqueue items non-translatable.
+ */
+function entityqueue_update_8006() {
+  // See https://www.drupal.org/project/entityqueue/issues/3150981
+  // If items is translatable, Content Translation creates base field overrides
+  // which does not take into account the bundle specific target type.
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $field_definition = $definition_update_manager->getFieldStorageDefinition('items', 'entity_subqueue');
+  $field_definition->setTranslatable(FALSE);
+  $definition_update_manager->updateFieldStorageDefinition($field_definition);
+
+  // Remove any BaseFieldOverrides created by Content Translation.
+  $queue_ids = \Drupal::entityTypeManager()
+    ->getStorage('entity_queue')
+    ->getQuery()
+    ->execute();
+
+  $bfo_ids = array_map(function ($queue_id) {
+    return "entity_subqueue.{$queue_id}.items";
+  }, $queue_ids);
+
+  $bfo_storage = \Drupal::entityTypeManager()->getStorage('base_field_override');
+  $bfo_entities = $bfo_storage->loadMultiple($bfo_ids);
+  $bfo_storage->delete($bfo_entities);
+}

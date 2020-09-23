@@ -141,7 +141,14 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
       // editable.
       if ($this->getSetting('link_to_edit_form') && $referenced_entities[$delta]->getEntityType()->hasLinkTemplate('edit-form')) {
         $element['_edit'] = $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => ['destination' => \Drupal::service('path.current')->getPath()]])->toRenderable() + [
-          '#attributes' => ['class' => ['form-item']],
+          '#attributes' => ['class' => ['form-item', 'entityqueue-edit-item-link']],
+        ];
+        $element['#attached']['html_head'][] = [
+          [
+            '#tag' => 'style',
+            '#value' => '.js-form-wrapper .form-wrapper .form-item.entityqueue-edit-item-link { margin-left: 1em }',
+          ],
+          'entityqueue-edit-item-link'
         ];
       }
     }

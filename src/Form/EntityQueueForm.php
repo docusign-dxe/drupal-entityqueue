@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeRepositoryInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Form\FormStateInterface;
@@ -90,8 +91,8 @@ class EntityQueueForm extends BundleEntityFormBase {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Name'),
-      '#maxlength' => 32,
-      '#size' => 32,
+      '#maxlength' => 255,
+      '#size' => 80,
       '#default_value' => $queue->label(),
       '#description' => $this->t('The human-readable name of this entity queue. This name must be unique.'),
       '#required' => TRUE,
@@ -100,6 +101,7 @@ class EntityQueueForm extends BundleEntityFormBase {
     $form['id'] = [
       '#type' => 'machine_name',
       '#default_value' => $queue->id(),
+      '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
         'exists' => '\Drupal\entityqueue\Entity\EntityQueue::load',
       ],

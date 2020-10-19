@@ -298,13 +298,15 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
     $parents = $element['#field_parents'];
 
     $submitted_values = NestedArray::getValue($form_state->getValues(), array_slice($button['#parents'], 0, -1));
-    $items = $form_state->getFormObject()->getEntity()->get($field_name);
-    $items->appendItem($submitted_values['new_item']);
+    if (isset($submitted_values['new_item']['target_id'])) {
+      $items = $form_state->getFormObject()->getEntity()->get($field_name);
+      $items->appendItem($submitted_values['new_item']);
 
-    // Increment the items count.
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-    $field_state['items_count']++;
-    static::setWidgetState($parents, $field_name, $form_state, $field_state);
+      // Increment the items count.
+      $field_state = static::getWidgetState($parents, $field_name, $form_state);
+      $field_state['items_count']++;
+      static::setWidgetState($parents, $field_name, $form_state, $field_state);
+    }
 
     $form_state->setRebuild();
   }

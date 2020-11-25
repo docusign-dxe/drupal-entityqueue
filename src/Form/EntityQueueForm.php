@@ -280,7 +280,10 @@ class EntityQueueForm extends BundleEntityFormBase {
       '#type' => 'container',
     ];
 
-    $selection_handler = $this->selectionManager->getInstance($queue->getEntitySettings());
+    $entity_settings = $queue->getEntitySettings();
+    $entity_settings += $entity_settings['handler_settings'];
+    unset($entity_settings['handler_settings']);
+    $selection_handler = $this->selectionManager->getInstance($entity_settings);
     $form['entity_settings']['settings']['handler_settings'] += $selection_handler->buildConfigurationForm([], $form_state);
 
     // For entityqueue's purposes, the 'target_bundles' setting of the 'default'

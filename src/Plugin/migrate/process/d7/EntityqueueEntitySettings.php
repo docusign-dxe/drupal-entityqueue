@@ -24,12 +24,12 @@ class EntityqueueEntitySettings extends ProcessPluginBase{
       'handler' => 'default:' . $row->getSourceProperty('target_type'),
       'handler_settings' => [
         'target_bundles' => $row->getSourceProperty('settings')['target_bundles'],
+        'sort' => [
+          'field' => '_none',
+        ],
+        'auto_create' => FALSE,
+        'auto_create_bundle' => '',
       ],
-      'sort' => [
-        'field' => '_none',
-      ],
-      'auto_create' => FALSE,
-      'auto_create_bundle' => '',
     ];
 
     return $entity_settings;

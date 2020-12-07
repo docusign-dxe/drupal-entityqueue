@@ -139,7 +139,7 @@ class EntityqueueDragtableWidget extends EntityReferenceAutocompleteWidget {
 
       // Show a link to the edit form of the entity if the entity type is
       // editable.
-      if ($this->getSetting('link_to_edit_form') && $referenced_entities[$delta]->getEntityType()->hasLinkTemplate('edit-form')) {
+      if ($this->getSetting('link_to_edit_form') && $referenced_entities[$delta]->getEntityType()->hasLinkTemplate('edit-form') && $referenced_entities[$delta]->access('edit')) {
         $element['_edit'] = $referenced_entities[$delta]->toLink($this->t('Edit'), 'edit-form', ['query' => ['destination' => \Drupal::service('path.current')->getPath()]])->toRenderable() + [
           '#attributes' => ['class' => ['form-item', 'entityqueue-edit-item-link']],
         ];
